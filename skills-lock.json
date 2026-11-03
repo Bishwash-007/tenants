@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "nextjs-best-practices": {
+      "source": "lingxling/awesome-skills-cn",
+      "sourceType": "github",
+      "skillPath": "antigravity-awesome-skills/plugins/agentic-awesome-skills/skills/nextjs-best-practices/SKILL.md",
+      "computedHash": "b1505d0c502f16b87bb8fa57dfb90038ced830f4db29e7e791c75dd067308672"
+    }
+  }
+}
