@@ -1,16 +1,9 @@
-import { Badge } from "@/components/ui/badge"
 import { listTablesRequest } from "@/lib/api/endpoints/tables"
-import { tableStatusLabel } from "@/lib/api/normalizers"
 import { can } from "@/lib/auth/rbac"
 import { requireBranchAccess } from "@/lib/auth/session"
 
 import { TableCreateForm } from "./table-create-form"
-
-const STATUS_VARIANTS = {
-  free: "secondary",
-  occupied: "destructive",
-  reserved: "outline",
-} as const
+import { TablesClient } from "./tables-client"
 
 export default async function TablesPage({
   params,
@@ -35,32 +28,7 @@ export default async function TablesPage({
 
       {canManage ? <TableCreateForm branchId={branchId} /> : null}
 
-      {tables.length === 0 ? (
-        <div className="rounded-xl border border-dashed bg-background p-8 text-center">
-          <p className="text-sm font-medium">No tables yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {canManage
-              ? "Add the first table above. Dine-in orders will use it."
-              : "Ask a manager to add tables for this branch."}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {tables.map((table) => (
-            <div key={table.id} className="rounded-xl border bg-background p-4">
-              <div className="flex items-start justify-between gap-2">
-                <p className="truncate text-sm font-semibold">{table.label}</p>
-                <Badge variant={STATUS_VARIANTS[table.status]}>
-                  {tableStatusLabel(table.status)}
-                </Badge>
-              </div>
-              <p className="mt-3 text-sm text-muted-foreground">
-                {table.seats} seat{table.seats === 1 ? "" : "s"}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+      <TablesClient branchId={branchId} tables={tables} canManage={canManage} />
     </div>
   )
 }

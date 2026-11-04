@@ -182,3 +182,4 @@ export function SidebarNav({ role, branches }: SidebarNavProps) {
     </nav>
   )
 }
+
