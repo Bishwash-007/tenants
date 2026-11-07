@@ -753,6 +753,12 @@ curl -sS -X POST "$BASE_URL/bills/prepare" \
   -d '{"branchId":"<branchId>","tableId":"<tableId>"}'
 ```
 
+When `tableId` is supplied, the API returns that table's pending bill and
+**adds every open order placed on the table since the bill was opened**,
+recomputing subtotal/tax/discount/total. One bill therefore covers every round
+at the table. Explicit `orderIds` still create a fresh bill and are rejected if
+an order already belongs to another bill.
+
 Or specify explicit orders:
 
 ```bash

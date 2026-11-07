@@ -49,7 +49,7 @@ export function DeactivateBranchButton({
   return (
     <Button
       type="button"
-      variant="destructive"
+      variant="outline"
       size="sm"
       onClick={onDeactivate}
       disabled={pending}

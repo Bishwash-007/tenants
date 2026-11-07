@@ -150,7 +150,7 @@ export function OrderDetailSheet({
                   {transitions.map((next) => (
                     <Button
                       key={next}
-                      variant={next === "cancelled" ? "destructive" : "default"}
+                      variant={next === "cancelled" ? "ghost" : "default"}
                       disabled={pending}
                       onClick={() => {
                         onTransition(order.id, next)

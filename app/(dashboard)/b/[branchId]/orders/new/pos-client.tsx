@@ -58,7 +58,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 interface POSClientProps {
   branchId: string
   initialCategories: MenuCategory[]
-  initialTables: { id: string; label: string; seats: number }[]
+  initialTables: {
+    id: string
+    label: string
+    seats: number
+    status: "free" | "occupied" | "reserved"
+  }[]
+  initialTableId: string | null
 }
 
 interface CartItem {
@@ -99,11 +105,17 @@ export function POSClient({
   branchId,
   initialCategories,
   initialTables,
+  initialTableId,
 }: POSClientProps) {
   const router = useRouter()
   const [categories] = useState(initialCategories)
   const [tables] = useState(initialTables)
-  const [selectedTableId, setSelectedTableId] = useState<string | null>(null)
+  const [selectedTableId, setSelectedTableId] = useState<string | null>(() => {
+    if (initialTableId && tables.some((table) => table.id === initialTableId)) {
+      return initialTableId
+    }
+    return tables[0]?.id ?? null
+  })
   const [orderType, setOrderType] = useState<
     "dine_in" | "takeaway" | "delivery"
   >("dine_in")
@@ -349,6 +361,11 @@ export function POSClient({
     setPagination((previous) => ({ ...previous, pageIndex: 0 }))
   }
 
+  function tableOptionLabel(table: (typeof tables)[number]) {
+    const status = table.status === "free" ? "" : ` · ${table.status}`
+    return `${table.label}${status} (${table.seats} seats)`
+  }
+
   function makeCreateOrderAction() {
     return async (
       _prev: ActionState,
@@ -401,10 +418,6 @@ export function POSClient({
     }
   }, [state, router, branchId])
 
-  if (orderType === "dine_in" && !selectedTableId && tables.length > 0) {
-    setSelectedTableId(tables[0].id)
-  }
-
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
       <div className="flex items-center justify-between border-b bg-background px-4 py-2">
@@ -436,7 +449,7 @@ export function POSClient({
               onValueChange={(value) => setSelectedTableId(value || null)}
               items={tables.map((table) => ({
                 value: table.id,
-                label: `${table.label} (${table.seats} seats)`,
+                label: tableOptionLabel(table),
               }))}
             >
               <SelectTrigger className="w-48" aria-label="Table">
@@ -445,7 +458,7 @@ export function POSClient({
               <SelectContent>
                 {tables.map((table) => (
                   <SelectItem key={table.id} value={table.id}>
-                    {table.label} ({table.seats} seats)
+                    {tableOptionLabel(table)}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import { flushSync } from "react-dom"
 import { QRCodeSVG } from "qrcode.react"
 import { toast } from "sonner"
 
@@ -18,9 +19,11 @@ import { type KDSOrderItem } from "@/lib/kds/types"
 import type { Bill, BillCheckoutResult } from "@/lib/api/endpoints/bills"
 
 import { checkoutBillAction, prepareBillForTableAction } from "./bill-actions"
+import { PrintBill, type PrintBranch } from "./print-bill"
 
 interface TableBillSheetProps {
   branchId: string
+  branch: PrintBranch
   tableId: string
   tableLabel: string
   open: boolean
@@ -31,6 +34,7 @@ type PaymentStatus = "idle" | "pending" | "succeeded" | "failed"
 
 export function TableBillSheet({
   branchId,
+  branch,
   tableId,
   tableLabel,
   open,
@@ -45,10 +49,15 @@ export function TableBillSheet({
   const [checkout, setCheckout] = useState<BillCheckoutResult | null>(null)
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("idle")
   const [polling, setPolling] = useState(false)
+  const [printedAt, setPrintedAt] = useState<Date | null>(null)
 
   const loading = bill === null && error === null && checkout === null
+  const itemsReady =
+    bill !== null &&
+    bill.orders.every((order) => orderItems[order.orderId] !== undefined)
 
   const loadBill = useCallback(async () => {
+    setError(null)
     const result = await prepareBillForTableAction(branchId, tableId)
     if (result.ok === false) {
       setError(result.message)
@@ -107,6 +116,34 @@ export function TableBillSheet({
     return () => clearInterval(interval)
   }, [checkout, polling])
 
+  // Browsers derive the "Save as PDF" file name from `document.title`, so swap
+  // in the bill id while the print dialog is open and restore it afterwards.
+  // The listeners also cover Ctrl/Cmd+P, not just the Print button.
+  useEffect(() => {
+    if (!bill) return
+
+    let previousTitle: string | null = null
+    const setBillTitle = () => {
+      previousTitle = document.title
+      document.title = `bill-${bill.billId}`
+    }
+    const restoreTitle = () => {
+      if (previousTitle !== null) {
+        document.title = previousTitle
+      }
+      previousTitle = null
+    }
+
+    window.addEventListener("beforeprint", setBillTitle)
+    window.addEventListener("afterprint", restoreTitle)
+
+    return () => {
+      window.removeEventListener("beforeprint", setBillTitle)
+      window.removeEventListener("afterprint", restoreTitle)
+      restoreTitle()
+    }
+  }, [bill])
+
   async function handleCheckout() {
     if (!bill) return
     const result = await checkoutBillAction(bill.billId)
@@ -119,13 +156,21 @@ export function TableBillSheet({
     setPolling(true)
   }
 
+  function handlePrint() {
+    if (!bill || !itemsReady) return
+    // Commit the receipt to the DOM before the browser snapshots the page.
+    flushSync(() => setPrintedAt(new Date()))
+    window.print()
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="!w-1/2 max-w-none">
         <SheetHeader>
           <SheetTitle>Bill · {tableLabel}</SheetTitle>
           <SheetDescription>
-            Combine open orders for this table and check out once.
+            Every open order on this table is billed together. Orders added
+            after the bill was opened are included automatically.
           </SheetDescription>
         </SheetHeader>
 
@@ -266,9 +311,17 @@ export function TableBillSheet({
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => window.print()}
+                disabled={!itemsReady}
+                onClick={handlePrint}
               >
                 Print
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => void loadBill()}
+              >
+                Refresh
               </Button>
               <Button className="flex-1" onClick={handleCheckout}>
                 Checkout — {formatMoney(bill.totalAmount, currency)}
@@ -285,6 +338,17 @@ export function TableBillSheet({
           ) : null}
         </div>
       </SheetContent>
+
+      {printedAt && bill ? (
+        <PrintBill
+          branch={branch}
+          tableLabel={tableLabel}
+          bill={bill}
+          orderItems={orderItems}
+          currency={currency}
+          printedAt={printedAt}
+        />
+      ) : null}
     </Sheet>
   )
 }

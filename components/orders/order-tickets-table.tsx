@@ -100,8 +100,8 @@ export function OrderTicketsTable({
   emptyMessage = "No active tickets. New orders appear here as they are placed.",
 }: OrderTicketsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
-    // Oldest ticket first — the rail a kitchen actually works from.
-    { id: "occurredAt", desc: false },
+    // Newest tickets first.
+    { id: "occurredAt", desc: true },
   ])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState("")

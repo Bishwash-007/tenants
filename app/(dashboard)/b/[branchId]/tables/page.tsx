@@ -2,7 +2,6 @@ import { listTablesRequest } from "@/lib/api/endpoints/tables"
 import { can } from "@/lib/auth/rbac"
 import { requireBranchAccess } from "@/lib/auth/session"
 
-import { TableCreateForm } from "./table-create-form"
 import { TablesClient } from "./tables-client"
 
 export default async function TablesPage({
@@ -14,6 +13,7 @@ export default async function TablesPage({
   const { session, branch } = await requireBranchAccess(branchId)
   const tables = await listTablesRequest(branchId)
   const canManage = can(session.role, "manageBranches")
+  const canCreateOrder = can(session.role, "createOrder")
   const occupied = tables.filter((table) => table.status === "occupied").length
 
   return (
@@ -26,9 +26,17 @@ export default async function TablesPage({
         </p>
       </div>
 
-      {canManage ? <TableCreateForm branchId={branchId} /> : null}
-
-      <TablesClient branchId={branchId} tables={tables} canManage={canManage} />
+      <TablesClient
+        branchId={branchId}
+        branch={{
+          name: branch.name,
+          address: branch.address,
+          phone: branch.phone,
+        }}
+        tables={tables}
+        canManage={canManage}
+        canCreateOrder={canCreateOrder}
+      />
     </div>
   )
 }

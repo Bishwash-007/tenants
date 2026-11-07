@@ -18,8 +18,23 @@ function isPageRequest(pathname: string): boolean {
   return !pathname.startsWith("/api")
 }
 
+function isPublicPage(pathname: string): boolean {
+  return (
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname === "/onboarding" ||
+    pathname.startsWith("/onboarding/")
+  )
+}
+
 function isAuthPage(pathname: string): boolean {
-  return pathname === "/login" || pathname.startsWith("/login/")
+  return (
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname === "/onboarding" ||
+    pathname.startsWith("/onboarding/")
+  )
 }
 
 function safeNextPath(value: string | null): string | null {
@@ -69,7 +84,7 @@ export function proxy(request: NextRequest) {
     return response
   }
 
-  if (isPageRequest(pathname) && !isAuthPage(pathname)) {
+  if (isPageRequest(pathname) && !isPublicPage(pathname)) {
     const accessToken = request.cookies.get(ACCESS_COOKIE)?.value
     const refreshToken = request.cookies.get(REFRESH_COOKIE)?.value
 

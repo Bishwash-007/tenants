@@ -30,6 +30,14 @@ export function useActionToast(state: ActionState): void {
     }
 
     if (state.status === "error") {
+      // Validation errors render inline next to their fields, so only toast
+      // unexpected (non-field) failures.
+      const hasFieldErrors =
+        state.fieldErrors !== undefined &&
+        Object.keys(state.fieldErrors).length > 0
+      if (hasFieldErrors) {
+        return
+      }
       toast.error(state.message ?? "Something went wrong.")
     }
   }, [state])

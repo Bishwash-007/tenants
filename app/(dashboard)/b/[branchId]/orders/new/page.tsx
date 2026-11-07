@@ -7,21 +7,28 @@ import { POSClient } from "./pos-client"
 
 interface POSPageProps {
   params: Promise<{ branchId: string }>
+  searchParams: Promise<{ tableId?: string }>
 }
 
-export default async function POSPage({ params }: POSPageProps) {
+export default async function POSPage({ params, searchParams }: POSPageProps) {
   const { branchId } = await params
+  const { tableId } = await searchParams
   await requireBranchAccess(branchId)
   const menu = await getBranchMenuRequest(branchId)
   const tables = await listTablesRequest(branchId)
   const categories = menu.filter(isMenuCategory)
-  const freeTables = tables.filter((t) => t.status === "free")
 
   return (
     <POSClient
       branchId={branchId}
       initialCategories={categories}
-      initialTables={freeTables}
+      initialTables={tables.map(({ id, label, seats, status }) => ({
+        id,
+        label,
+        seats,
+        status,
+      }))}
+      initialTableId={tableId ?? null}
     />
   )
 }

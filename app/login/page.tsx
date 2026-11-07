@@ -48,6 +48,16 @@ export default async function LoginPage({
 
           <LoginForm defaultTenant={tenantSlug ?? ""} nextPath={nextPath} />
         </div>
+
+        <p className="text-center text-sm text-muted-foreground">
+          No workspace yet?{" "}
+          <a
+            href="/onboarding"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            Create one
+          </a>
+        </p>
       </div>
     </main>
   )

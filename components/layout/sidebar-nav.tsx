@@ -76,7 +76,7 @@ const NAV_ITEMS: NavItem[] = [
     capability: "viewInventory",
     segment: "inventory",
     branchScoped: true,
-    implemented: false,
+    implemented: true,
   },
   {
     label: "Staff",
@@ -84,7 +84,7 @@ const NAV_ITEMS: NavItem[] = [
     capability: "viewStaff",
     segment: "staff",
     branchScoped: true,
-    implemented: false,
+    implemented: true,
   },
   {
     label: "Reports",
@@ -108,7 +108,7 @@ const NAV_ITEMS: NavItem[] = [
     capability: "viewCrm",
     segment: "crm",
     branchScoped: false,
-    implemented: false,
+    implemented: true,
   },
   {
     label: "Billing",
@@ -182,4 +182,3 @@ export function SidebarNav({ role, branches }: SidebarNavProps) {
     </nav>
   )
 }
-

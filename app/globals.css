@@ -127,3 +127,30 @@
     @apply font-sans;
     }
 }
+/*
+ * Printing a bill: the receipt is portalled to <body> (`#bill-print-root`, see
+ * tables/print-bill.tsx). Hide everything else so the browser prints only the
+ * receipt, and undo the dialog's scroll lock so long bills can paginate.
+ */
+@media print {
+  @page {
+    margin: 8mm;
+  }
+
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    background: #fff !important;
+    padding: 0 !important;
+  }
+
+  body > *:not(#bill-print-root) {
+    display: none !important;
+  }
+
+  #bill-print-root {
+    display: block !important;
+  }
+}
